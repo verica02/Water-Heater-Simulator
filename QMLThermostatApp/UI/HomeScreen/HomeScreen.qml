@@ -3,10 +3,10 @@ import QtQuick.Controls 2.15
 import QtCharts 2.0
 
 Item {
-    id:homeScreen
+    id: homeScreen
 
     property var heatSelectDialogHolder: null
-    property var time : 0
+    property var time: 0
 
     function createHeatSelectDialog(){
         if(heatSelectDialogHolder === null){
@@ -27,55 +27,55 @@ Item {
 
 
     Rectangle{
-        id:mainBackgroud
-        anchors.fill:parent
-        color:"#000000"
+        id: mainBackgroud
+        anchors.fill: parent
+        color: "#000000"
     }
 
     TextInput {
-        id:currentTempText
+        id: currentTempText
         text: "20"
         font.pixelSize: 100
         width: 40
-        color:"#ffffff"
+        color: "#ffffff"
         //anchors.centerIn: parent
-        anchors.left:parent.left
-        anchors.leftMargin: 200
+        anchors.left: parent.left
+        anchors.leftMargin: window.width * .2
         anchors{
             verticalCenter: parent.verticalCenter
         }
         cursorVisible: true
         onTextChanged: {
-            systemController.initialTemp = parseInt(text);
+            systemController.initialTemp = parseInt(currentTempText.text);
 
         }
     }
 
     Text{
-        id:systemStatus
+        id: systemStatus
         anchors{
             verticalCenter: parent.verticalCenter
-            top:currentTempText.bottom
-            topMargin:20
+            top: currentTempText.bottom
+            topMargin: 20
             horizontalCenter: currentTempText.horizontalCenter
         }
 
-        text:systemController.systemStatusMessage
-        color:"#0E86D4"
+        text: systemController.systemStatusMessage
+        color: "#0E86D4"
         font.pixelSize: 20
     }
 
     Text{
-        id:initialTemp
+        id: initialTemp
         anchors{
             //verticalCenter: parent.verticalCenter
-            bottom:currentTempText.top
-            bottomMargin:30
+            bottom: currentTempText.top
+            bottomMargin: 30
             horizontalCenter: currentTempText.horizontalCenter
         }
 
-        text:"Initial Temperature"
-        color:"#0E86D4"
+        text: "Initial Temperature"
+        color: "#0E86D4"
         font.pixelSize: 16
     }
 
@@ -104,11 +104,11 @@ Item {
     }
 
     Button{
-        id:onButton
+        id: onButton
         anchors{
-            bottom:temperatureSlider.bottom
-            right:currentTempText.left
-            rightMargin:120
+            bottom: temperatureSlider.bottom
+            right: currentTempText.left
+            rightMargin: 120
         }
 
         text: "ON"
@@ -119,19 +119,18 @@ Item {
                 console.log("State: " + systemController.systemState)
                 timer2.running = false;
                 timer1.running = true;
-
-
             }
         }
-
     }
 
     Timer {
-        id:timer1
+        id: timer1
         interval: 500; running: false; repeat: true
         onTriggered:
         {
             time = time + 20
+            console.log("The timer is: " + time);
+            systemController.initialTemp = parseInt(currentTempText.text);
             if(systemController.currentSystemTemperature === systemController.targetTemp)
             {
                 systemController.checkSystemStatus();
@@ -139,14 +138,21 @@ Item {
 
             if(systemController.tState === 0)
             {
+                 // after some time and contamination the boiler takes longer to reach the target temp
+                if(time >= 5000)
+                {
+                    time = time + 100;
+                }
+
                 interval = 500
                 systemController.increaseTemp(systemController.currentSystemTemperature)
+                systemController.initialTemp = parseInt(currentTempText.text);
                 series1.append(time, systemController.currentSystemTemperature)
             }
 
             if(systemController.tState === 1)
             {
-                interval = 1500
+                interval = 1500              
                 systemController.decreaseTemp(systemController.currentSystemTemperature)
                 series1.append(time, systemController.currentSystemTemperature)
                 if(systemController.currentSystemTemperature === systemController.targetTemp - 5)
@@ -160,7 +166,7 @@ Item {
 
 
     Timer {
-        id:timer2
+        id: timer2
         interval: 500; running: false; repeat: true
         onTriggered:
         {
@@ -179,13 +185,13 @@ Item {
     ChartView {
         title: "Temperature-Time Graph"
         anchors{
-            right:parent.right
+            right: parent.right
             verticalCenter: parent.verticalCenter
-            leftMargin:20
+            leftMargin: 20
         }
 
-        width:600
-        height:400
+        width: 600
+        height: 400
 
         legend.visible: false
         antialiasing: true
@@ -195,14 +201,14 @@ Item {
             min: 0
             max: 10000
             tickCount: 5
-            titleText:"Time (ms)"
+            titleText: "Time (ms)"
         }
 
         ValueAxis {
             id: axisY1
             min: 0
             max: 100
-            titleText:"Temperature (°C)"
+            titleText: "Temperature (°C)"
         }
 
         SplineSeries {
@@ -210,36 +216,34 @@ Item {
             axisX: axisX
             axisY: axisY1
         }
-
     }
 
     Text{
         id:targetTemp
         anchors{
             //verticalCenter: parent.verticalCenter
-            bottom:temperatureSlider.top
-            bottomMargin:10
+            bottom: temperatureSlider.top
+            bottomMargin: 10
             horizontalCenter: temperatureSlider.horizontalCenter
         }
 
-        text:"Target"
-        color:"#0E86D4"
+        text: "Target"
+        color: "#0E86D4"
         font.pixelSize: 16
     }
 
 
     TemperatureControlSlider{
-        id:temperatureSlider
-        z:10
-        value:systemController.targetTemp
+        id: temperatureSlider
+        z: 10
+        value: systemController.targetTemp
         anchors{
-            top:parent.top
-            bottom:parent.bottom
-            left:currentTempText.right
-            leftMargin:120
-            topMargin:80
-            bottomMargin:80
+            top: parent.top
+            bottom: parent.bottom
+            left: currentTempText.right
+            leftMargin: 120
+            topMargin: 80
+            bottomMargin: 80
         }
     }
-
 }
